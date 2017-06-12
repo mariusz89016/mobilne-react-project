@@ -7,7 +7,8 @@ scalaVersion := "2.11.8"
 
 val sriVersion = "0.7.1"
 
-libraryDependencies ++= Seq("com.github.chandu0101" %%% "sri-mobile" % sriVersion)
+libraryDependencies ++= Seq("com.github.chandu0101" %%% "sri-mobile" % sriVersion,
+  "com.github.marklister" %%% "base64" % "0.2.3")
 
 
 

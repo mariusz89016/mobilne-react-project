@@ -1,7 +1,7 @@
 package sri.mobile.template.router
 
 import sri.core.ReactElement
-import sri.mobile.template.components.HelloSriMobile
+import sri.mobile.template.components.{RegistrationComponent, ServerComponent}
 import sri.universal.components.View
 import sri.universal.router._
 import sri.universal.styles.UniversalStyleSheet
@@ -13,7 +13,8 @@ object AppRouter {
 
   object Config extends UniversalRouterConfig {
 
-    override val initialRoute = defineInitialRoute(HomePage, "Home", HelloSriMobile())
+//    override val initialRoute = defineInitialRoute(HomePage, "Home", RegistrationComponent(RegistrationComponent.Props("nazwa")))
+    override val initialRoute = defineInitialRoute(HomePage, "Home", ServerComponent(ServerComponent.Props("nazwa")))
 
     override val notFound = UniversalRouteNotFound(initialRoute._1)
 
