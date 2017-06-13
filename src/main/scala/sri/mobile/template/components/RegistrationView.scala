@@ -14,8 +14,10 @@ import scala.scalajs.js.annotation.ScalaJSDefined
 import scala.scalajs.js.typedarray.Uint8Array
 import com.github.marklister.base64.Base64._
 import sri.mobile.template.components.RegistrationView.State
+import sri.mobile.template.router.AppRouter.PlayerOwnPage
+import sri.universal.router.UniversalRouterComponent
 import sri.universal.styles.UniversalStyleSheet
-import sri.universal.{ReactEvent, TextInputEvent}
+import sri.universal.{ReactEvent, TextInputEvent, router}
 
 import scala.scalajs.js.JSON
 
@@ -24,8 +26,8 @@ object RegistrationView {
   case class State(serverIp: String, myIp: String, ssid: String)
 
   @ScalaJSDefined
-  class Component extends ReactComponent[Unit, RegistrationView.State] {
-    initialState(State("", "", ""))
+  class Component extends UniversalRouterComponent[Unit, RegistrationView.State] {
+    initialState(State("192.168.43.2", "", ""))
 
     AndroidWifiModule.getIP((myIp: String) => setState(state.copy(myIp = if (myIp == "0.0.0.0") "192.168.43.1" else myIp)): Unit)
     AndroidWifiModule.getSSID((ssid: String) => setState(state.copy(ssid = ssid)): Unit)
@@ -34,8 +36,9 @@ object RegistrationView {
       val receivedMsg = new TextDecoder("utf-8").decode(msg)
       val dynamicJSON = JSON.parse(receivedMsg)
       if(dynamicJSON.command == "registered") {
-        global.alert("Registered!")
-        //todo navigate to game screen
+
+      } else if(dynamicJSON.command == "start") {
+        navigateTo(PlayerOwnPage)
       }
     }
     val socket: Socket = Udp.createSocket("udp4")
@@ -47,6 +50,7 @@ object RegistrationView {
       View()(
         TextInput(
           keyboardType = KeyboardType.NUMBER_PAD,
+          defaultValue = state.serverIp,
           placeholder = "Insert server IP...",
           onChange = (reactEvent: ReactEvent[TextInputEvent]) => setState(state.copy(serverIp = reactEvent.nativeEvent.text)): Unit)(),
         Text()(s"IP: ${state.myIp}"),
@@ -63,6 +67,7 @@ object RegistrationView {
       )
     }
   }
+  js.constructorOf[Component].contextTypes = router.routerContextTypes
 
   def apply() = makeElement[Component]
 }
