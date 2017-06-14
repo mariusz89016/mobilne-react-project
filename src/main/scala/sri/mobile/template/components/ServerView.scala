@@ -53,14 +53,22 @@ object ServerView {
             socket.send(msg, 0, msg.length, 12345, dynamicJSON.ip.toString)*/
             setState(State(state.myIp, state.ssid, state.player1, Player("player2", dynamicJSON.ip.toString, "<none>"), state.pl1Joined, true))
 
-            val msg2 = s"""
+            val msg21 = s"""
                           |{
                           |  "command": "start",
+                          |  "id": 0,
                           |  "serverIp": "${state.myIp}"
                           |}
                           |""".stripMargin.getBytes.toBase64
-            socket.send(msg2, 0, msg2.length, 12345, state.player1.ip)
-            socket.send(msg2, 0, msg2.length, 12345, state.player2.ip)
+            val msg22 = s"""
+                           |{
+                           |  "command": "start",
+                           |  "id": 1,
+                           |  "serverIp": "${state.myIp}"
+                           |}
+                           |""".stripMargin.getBytes.toBase64
+            socket.send(msg21, 0, msg21.length, 12345, state.player1.ip)
+            socket.send(msg22, 0, msg21.length, 12345, state.player2.ip)
             navigateTo(PlayersSharedPage, (state.player1, state.player2, state.myIp), "table view")
           }
 

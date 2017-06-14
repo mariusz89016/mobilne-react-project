@@ -14,7 +14,7 @@ import scala.scalajs.js.annotation.ScalaJSDefined
 import scala.scalajs.js.typedarray.Uint8Array
 import com.github.marklister.base64.Base64._
 import sri.mobile.template.components.RegistrationView.State
-import sri.mobile.template.router.AppRouter.PlayerOwnPage
+import sri.mobile.template.router.AppRouter.{PlayerOwnPage, PlayersSharedPage}
 import sri.mobile.template.utils.{EasySocket, Routing}
 import sri.universal.router.UniversalRouterComponent
 import sri.universal.styles.UniversalStyleSheet
@@ -28,7 +28,7 @@ object RegistrationView {
 
   @ScalaJSDefined
   class Component extends UniversalRouterComponent[Unit, RegistrationView.State] {
-    initialState(State("192.168.1.6", "", ""))
+    initialState(State("172.16.1.102", "", ""))
 
     AndroidWifiModule.getIP((myIp: String) => setState(state.copy(myIp = if (myIp == "0.0.0.0") "192.168.43.1" else myIp)): Unit)
     AndroidWifiModule.getSSID((ssid: String) => setState(state.copy(ssid = ssid)): Unit)
@@ -36,10 +36,12 @@ object RegistrationView {
     def onMessageCallback(msg: Uint8Array, rinfo: js.Object): Unit = {
       val receivedMsg = new TextDecoder("utf-8").decode(msg)
       val dynamicJSON = JSON.parse(receivedMsg)
+//      global.alert(s"registration view $receivedMsg")
 
       dynamicJSON.command.toString match {
         case "start" =>
-          Routing.replace(getRouterCtrl, PlayerOwnPage, dynamicJSON.serverIp.toString, "Player's view")
+//          navigateTo(PlayerOwnPage, (dynamicJSON.serverIp.toString, dynamicJSON.id.toString), "player's view")
+          Routing.replace(getRouterCtrl, PlayerOwnPage, (dynamicJSON.serverIp.toString, dynamicJSON.id.toString.toInt), "Player's view")
         //case "registered" => {}
         case _ => {global.alert(s"unknown message: ${JSON.stringify(dynamicJSON)}")}
       }

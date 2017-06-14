@@ -13,6 +13,6 @@ class EasySocket(onMessageCallback: (Uint8Array, js.Object) => Unit, port: Int =
 
   def send(ip: String)(msg: String) = {
     val encodedMessage = msg.getBytes.toBase64
-    socket.send(encodedMessage, 0, encodedMessage.length, 12345, ip)
+    socket.send(encodedMessage, 0, encodedMessage.length, port, ip)
   }
 }

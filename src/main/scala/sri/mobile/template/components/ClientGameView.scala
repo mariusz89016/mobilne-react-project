@@ -22,7 +22,7 @@ object ClientGameView {
   class Component() extends ReactComponent[Props, State] {
     initialState(State(
       s"""
-         |<HandView cards={[]} serverIp="0.0.0.0">
+         |<HandView cards={[]} serverIp="0.0.0.0" id=0>
          |
          |</HandView>
        """.stripMargin))
@@ -32,38 +32,41 @@ object ClientGameView {
       val dynamicJSON = JSON.parse(receivedMsg)
       if(dynamicJSON.command == "jsx") {
         val msg = new String(dynamicJSON.message.toString.toByteArray)
+//        global.alert("trying to set: " + msg)
         setState(State(msg))
+        forceUpdate()
       }
     }
 
-    val socket = new EasySocket(onMessageCallback _)
-
-    def sendCardToServer(stringifiedCard: String) = {
-
-      socket.send(props.serverIp)(
-        s"""
-           |{
-           |  "command": "pushCard",
-           |  "card": ${stringifiedCard}
-           |}
-         """.stripMargin
-      )
-
-      global.alert(s"sending card: ${stringifiedCard}")
-    }
-
-    global.sendToServer = sendCardToServer _
+    val socket = new EasySocket(onMessageCallback _, 12346)
+//
+//    def sendCardToServer(stringifiedCard: String) = {
+//
+//      socket.send(props.serverIp)(
+//        s"""
+//           |{
+//           |  "command": "pushCard",
+//           |  "id": ${props.id},
+//           |  "card": ${stringifiedCard}
+//           |}
+//         """.stripMargin
+//      )
+//
+//      global.alert(s"sending card: ${stringifiedCard}")
+//    }
+//
+//    global.sendToServer = sendCardToServer _
 
     def render() = {
       View()(
-        Text()("Cards in your hand:"),
+        Text()("Cards in your hand1:"),
         JsxViewer(jsx = state.jsx, games.ComponentsMapper)
       )
     }
   }
 
   case class State(jsx: String)
-  case class Props(serverIp: String)
+  case class Props(serverIp: String, id: Int)
 
-  def apply(serverIp: String) = makeElement[Component](Props(serverIp))
+  def apply(serverIp: String, id: Int) = makeElement[Component](Props(serverIp, id))
 }

@@ -4,6 +4,7 @@ import sri.core.ElementFactory.makeElement
 import sri.core.{ReactComponent, ReactElement}
 import sri.mobile.template.components.ClientGameView.State
 import sri.mobile.template.games.PlayingCard
+import sri.mobile.template.messaging.Socket
 import sri.mobile.template.messaging.encoding.TextDecoder
 import sri.mobile.template.utils.EasySocket
 import sri.universal.components._
@@ -19,16 +20,19 @@ object HandView{
   class Component extends ReactComponent[Props, Unit] {
 
     def onMessageCallback(msg: Uint8Array, rinfo: js.Object): Unit = {
-
+      val receivedMsg = new TextDecoder("utf-8").decode(msg)
+      val dynamicJSON = JSON.parse(receivedMsg)
+//      global.alert("received msg (in HandView): " + receivedMsg)
     }
 
-    val socket = new EasySocket(onMessageCallback _)
+    val socket = new EasySocket(onMessageCallback _, 12347)
 
     def sendCardToServer(card: PlayingCard) = {
       socket.send(props.serverIp)(
         s"""
            |{
            |  "command": "pushCard",
+           |  "id": ${props.id},
            |  "card": ${upickle.default.writeJs(card)}
            |}
          """.stripMargin
@@ -46,7 +50,7 @@ object HandView{
     }
   }
 
-  case class Props(cards: Seq[PlayingCard], serverIp: String)
+  case class Props(cards: Seq[PlayingCard], serverIp: String, id: Int)
 
-  def apply(cards: Seq[PlayingCard], serverIp: String) = makeElement[Component](Props(cards, serverIp))
+  def apply(cards: Seq[PlayingCard], serverIp: String, id: Int) = makeElement[Component](Props(cards, serverIp, id))
 }
