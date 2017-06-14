@@ -11,10 +11,13 @@ case class SimpleMauGameInProgress(
                           playerHands: Seq[Seq[PlayingCard]],
                           currentPlayerNo: Int
                         ) extends SimpleMauGame{
-  private def cardsMatch(lower: PlayingCard, upper: PlayingCard) = {
-    (lower, upper) match {
-      case (Joker, _) | (_, Joker) => true
+
+  private def cardsMatch(stack: Seq[PlayingCard], card: PlayingCard): Boolean = {
+    (stack.head, card) match {
+      case (_, Joker) => true
+      case (Joker, _) => cardsMatch(stack.tail, card)
       case (RankedCard(_, suit1), RankedCard(_, suit2)) if suit1 == suit2 => true
+      case (RankedCard(rank1, _), RankedCard(rank2, _)) if rank1 == rank2 => true
       case _ => false
     }
   }
@@ -29,8 +32,7 @@ case class SimpleMauGameInProgress(
         ))
 
       case PushCard(card) =>
-        val topCard = uncoveredStack.head
-        if(playerNo == currentPlayerNo && cardsMatch(topCard, card)) {
+        if(playerNo == currentPlayerNo && cardsMatch(uncoveredStack, card)) {
           Some(this.copy(
             uncoveredStack = card +: uncoveredStack,
             currentPlayerNo = (currentPlayerNo + 1) % playerHands.length,

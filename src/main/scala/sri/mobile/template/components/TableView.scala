@@ -1,25 +1,24 @@
 package sri.mobile.template.components
 
-import sri.core
 import sri.core.ElementFactory.makeElement
 import sri.core.{ReactComponent, ReactElement}
 import sri.mobile.template.games.PlayingCard
 import sri.universal.components._
-import scala.scalajs.js.Dynamic.global
 
+import scala.scalajs.js.Dynamic.global
 import scala.scalajs.js.annotation.ScalaJSDefined
 
-object HandComponent{
+object TableView{
   @ScalaJSDefined
   class Component extends ReactComponent[Props, Unit] {
     override def render(): ReactElement = {
-      ScrollView()(props.cards.map{card =>
-        TouchableHighlight(onPress = () => global.alert(card.toString))(CardView(card, true))
-      })
+      TouchableOpacity(/*onPress = () => global.alert(props.uncoveredCard.toString)*/)(
+        CardView(props.uncoveredCard, true)
+      )
     }
   }
 
-  case class Props(cards: Seq[PlayingCard])
+  case class Props(uncoveredCard: PlayingCard)
 
-  def apply(cards: Seq[PlayingCard]) = makeElement[Component](Props(cards))
+  def apply(uncoveredCard: PlayingCard) = makeElement[Component](Props(uncoveredCard))
 }

@@ -14,13 +14,9 @@ object StartView {
   @ScalaJSDefined
   class Component extends UniversalRouterComponent[Unit, Unit] {
     override def render(): ReactElement = View()(
-      Button(title = "New game", onPress = () => navigateTo(ServerPage))(),
-      Button(title = "Join game", onPress = () => navigateTo(ClientPage))()
+      Button(title = "New game", onPress = () => resetStackWithNewRoute(ServerPage))(),
+      Button(title = "Join game", onPress = () => resetStackWithNewRoute(ClientPage))()
     )
-
-    def onTextClick(e: ReactEvent[SyntheticEvent]) = {
-      navigateToHome()
-    }
   }
 
   js.constructorOf[Component].contextTypes = router.routerContextTypes

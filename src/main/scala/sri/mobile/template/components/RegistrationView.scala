@@ -15,6 +15,7 @@ import scala.scalajs.js.typedarray.Uint8Array
 import com.github.marklister.base64.Base64._
 import sri.mobile.template.components.RegistrationView.State
 import sri.mobile.template.router.AppRouter.PlayerOwnPage
+import sri.mobile.template.utils.{EasySocket, Routing}
 import sri.universal.router.UniversalRouterComponent
 import sri.universal.styles.UniversalStyleSheet
 import sri.universal.{ReactEvent, TextInputEvent, router}
@@ -27,7 +28,7 @@ object RegistrationView {
 
   @ScalaJSDefined
   class Component extends UniversalRouterComponent[Unit, RegistrationView.State] {
-    initialState(State("192.168.43.2", "", ""))
+    initialState(State("192.168.1.6", "", ""))
 
     AndroidWifiModule.getIP((myIp: String) => setState(state.copy(myIp = if (myIp == "0.0.0.0") "192.168.43.1" else myIp)): Unit)
     AndroidWifiModule.getSSID((ssid: String) => setState(state.copy(ssid = ssid)): Unit)
@@ -35,16 +36,16 @@ object RegistrationView {
     def onMessageCallback(msg: Uint8Array, rinfo: js.Object): Unit = {
       val receivedMsg = new TextDecoder("utf-8").decode(msg)
       val dynamicJSON = JSON.parse(receivedMsg)
-      if(dynamicJSON.command == "registered") {
 
-      } else if(dynamicJSON.command == "start") {
-        navigateTo(PlayerOwnPage)
+      dynamicJSON.command.toString match {
+        case "start" =>
+          Routing.replace(getRouterCtrl, PlayerOwnPage, dynamicJSON.serverIp.toString, "Player's view")
+        //case "registered" => {}
+        case _ => {global.alert(s"unknown message: ${JSON.stringify(dynamicJSON)}")}
       }
     }
-    val socket: Socket = Udp.createSocket("udp4")
-    socket.bind(12345)
-    socket.on("message", onMessageCallback _)
 
+    val socket = new EasySocket(onMessageCallback _)
 
     def render(): ReactElement = {
       View()(
@@ -56,13 +57,14 @@ object RegistrationView {
         Text()(s"IP: ${state.myIp}"),
         Text()(s"SSID: ${state.ssid}"),
         Button(title = "Register", onPress = () => {
-          val msg = s"""
-                       |{
-                       |  "command": "register",
-                       |  "ip": "${state.myIp}"
-                       |}
-                       |""".stripMargin.getBytes.toBase64
-          socket.send(msg, 0, msg.length, 12345, state.serverIp)
+          socket.send(state.serverIp)(
+            s"""
+               |{
+               |  "command": "register",
+               |  "ip": "${state.myIp}"
+               |}
+               |""".stripMargin
+          )
         })()
       )
     }

@@ -31,42 +31,48 @@ object ServerView {
     def onMessageCallback(msg: Uint8Array, rinfo: js.Object): Unit = {
       val receivedMsg = new TextDecoder("utf-8").decode(msg)
       val dynamicJSON = JSON.parse(receivedMsg)
-      if(dynamicJSON.command == "register") {
-        if(state.pl1Joined == false) {
-          val msg = s"""
-                       |{
-                       |  "command": "registered",
-                       |  "id": "player1"
-                       |}
-                       |""".stripMargin.getBytes.toBase64
-          socket.send(msg, 0, msg.length, 12345, dynamicJSON.ip.toString)
-          setState(State(state.myIp, state.ssid, Player("player1", dynamicJSON.ip.toString, "<none>"), state.player2, true, false))
-        } else if(state.pl2Joined == false) {
-          val msg = s"""
-                       |{
-                       |  "command": "registered",
-                       |  "id": "player2"
-                       |}
-                       |""".stripMargin.getBytes.toBase64
-          socket.send(msg, 0, msg.length, 12345, dynamicJSON.ip.toString)
-          setState(State(state.myIp, state.ssid, state.player1, Player("player2", dynamicJSON.ip.toString, "<none>"), state.pl1Joined, true))
 
-          val msg2 = s"""
-                       |{
-                       |  "command": "start"
-                       |}
-                       |""".stripMargin.getBytes.toBase64
-          socket.send(msg2, 0, msg2.length, 12345, state.player1.ip)
-          socket.send(msg2, 0, msg2.length, 12345, state.player2.ip)
-          navigateTo(PlayersSharedPage, (state.player1, state.player2), "asd")
-        }
-      } else if(dynamicJSON.command == "message") {
-        if(dynamicJSON.id == "player1") {
-          setState(state.copy(player1 = state.player1.copy(lastMessage = dynamicJSON.message.toString)))
-        }
-        else if(dynamicJSON.id == "player2") {
-          setState(state.copy(player2 = state.player2.copy(lastMessage = dynamicJSON.message.toString)))
-        }
+      dynamicJSON.command.toString match {
+        case "register" =>
+          if(state.pl1Joined == false) {
+           /* val msg = s"""
+                         |{
+                         |  "command": "registered",
+                         |  "id": "player1"
+                         |}
+                         |""".stripMargin.getBytes.toBase64
+            socket.send(msg, 0, msg.length, 12345, dynamicJSON.ip.toString)*/
+            setState(State(state.myIp, state.ssid, Player("player1", dynamicJSON.ip.toString, "<none>"), state.player2, true, false))
+          } else if(state.pl2Joined == false) {
+            /*val msg = s"""
+                         |{
+                         |  "command": "registered",
+                         |  "id": "player2"
+                         |}
+                         |""".stripMargin.getBytes.toBase64
+            socket.send(msg, 0, msg.length, 12345, dynamicJSON.ip.toString)*/
+            setState(State(state.myIp, state.ssid, state.player1, Player("player2", dynamicJSON.ip.toString, "<none>"), state.pl1Joined, true))
+
+            val msg2 = s"""
+                          |{
+                          |  "command": "start",
+                          |  "serverIp": "${state.myIp}"
+                          |}
+                          |""".stripMargin.getBytes.toBase64
+            socket.send(msg2, 0, msg2.length, 12345, state.player1.ip)
+            socket.send(msg2, 0, msg2.length, 12345, state.player2.ip)
+            navigateTo(PlayersSharedPage, (state.player1, state.player2, state.myIp), "table view")
+          }
+
+        case "message" =>
+          if(dynamicJSON.id == "player1") {
+            setState(state.copy(player1 = state.player1.copy(lastMessage = dynamicJSON.message.toString)))
+          }
+          else if(dynamicJSON.id == "player2") {
+            setState(state.copy(player2 = state.player2.copy(lastMessage = dynamicJSON.message.toString)))
+          }
+
+        case x => global.alert(s"Unknown message: ${x}")
       }
     }
     override def componentDidMount(): Unit = {

@@ -15,19 +15,21 @@ object AppRouter {
   object ClientPage extends StaticPage
   object ServerPage extends StaticPage
 
-  object PlayersSharedPage extends DynamicPage[(Player, Player)]
-  object PlayerOwnPage extends StaticPage
+  object PlayersSharedPage extends DynamicPage[(Player, Player, String)]
+  object PlayerOwnPage extends DynamicPage[String]
 
   object Config extends UniversalRouterConfig {
 
     override val initialRoute = defineInitialRoute(HomePage, "Home", StartView())
+//    override val initialRoute = defineInitialRoute(HomePage, "Home", ServerGameView(Player("player1", "192.168.1.3", ""), Player("player2", "192.168.1.3", "")))
+
 
     staticRoute(ClientPage, "Create a new game", RegistrationView())
     staticRoute(ServerPage, "Join a game", ServerView())
 
 
-    staticRoute(PlayerOwnPage, "Player's own view", ClientGameView())
-    dynamicRoute(PlayersSharedPage, { players: (Player, Player) => ServerGameView(players._1, players._2) })
+    dynamicRoute(PlayerOwnPage, { serverIp: String => ClientGameView(serverIp) })
+    dynamicRoute(PlayersSharedPage, { props: (Player, Player, String) => ServerGameView(props._1, props._2, props._3) })
 
     override val notFound = UniversalRouteNotFound(initialRoute._1)
 
